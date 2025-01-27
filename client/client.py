@@ -37,6 +37,8 @@ class Client:
                     raise Exception("File must be below 4GB.")
 
                 filename = os.path.basename(f.name)
+                if not filename.endswith(".mp4"):
+                    raise Exception("File type must be mp4.")
                 filename_bits = filename.encode("utf-8")
                 header = self.protocol_header(len(filename_bits), 0, filesize)
 
@@ -50,7 +52,6 @@ class Client:
                     data = f.read(4096)
 
         finally:
-            print()
             print("closing socket")
             sock.close()
 
