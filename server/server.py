@@ -88,7 +88,7 @@ class Server:
                 if output:
                     self.send_file(conn, output, process)
                 else:
-                    raise Exception
+                    raise Exception("Send file to client failed")
 
             except Exception as e:
                 print(e)

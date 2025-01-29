@@ -97,6 +97,9 @@ class Client:
             media_type = sock.recv(media_type_length).decode("utf-8")
             print("Media type: {}".format(media_type))
 
+            if payload_length == 0:
+                raise Exception("No data to read from server.")
+
             with open(os.path.join(output, response["filename"]), "wb+") as f:
                 while payload_length > 0:
                     payload = sock.recv(
