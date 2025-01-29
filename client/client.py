@@ -16,6 +16,8 @@ class Client:
         self.server_port = server_port
         self.sock = None
 
+    STREAM_RATE = 4096
+
     def start(self):
         sock = self.sock
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -70,9 +72,44 @@ class Client:
                     sock.send(data)
                     data = f.read(4096)
 
+            self.handle_response(sock)
+
         finally:
             print("closing socket")
             sock.close()
+
+    def handle_response(self, sock):
+        output = "client/output"
+        if not os.path.exists(output):
+            os.makedirs(output)
+        try:
+            header = sock.recv(8)
+
+            response_length = int.from_bytes(header[:2], "big")
+            media_type_length = int.from_bytes(header[2:3], "big")
+            payload_length = int.from_bytes(header[3:], "big")
+
+            response_json = sock.recv(response_length).decode("utf-8")
+            response = json.loads(response_json)
+
+            print("Response: {}".format(response))
+
+            media_type = sock.recv(media_type_length).decode("utf-8")
+            print("Media type: {}".format(media_type))
+
+            with open(os.path.join(output, response["filename"]), "wb+") as f:
+                while payload_length > 0:
+                    payload = sock.recv(
+                        payload_length
+                        if payload_length <= self.STREAM_RATE
+                        else self.STREAM_RATE
+                    )
+                    f.write(payload)
+                    payload_length -= len(payload)
+
+            print("Finished downloading the file from server.")
+        except Exception as e:
+            print(e)
 
     def protocol_header(self, request_length, json_length, data_length):
         return (

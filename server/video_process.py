@@ -4,14 +4,16 @@ import datetime
 
 
 class VideoProcess:
-    def __init__(self, process, params, inputFile, outputDir):
+
+    def __init__(self, process, params, dpath, filename):
         self.process = process
         self.params = params
-        self.inputFile = inputFile
-        self.outputDir = outputDir
+        self.dpath = dpath
+        self.filename = filename
 
     def compress(self, input, output):
         subprocess.call("ffmpeg -i " + input + " -crf 18 " + output, shell=True)
+        return output
 
     def change_resolution(self, input, output):
         if self.params["resolution"] is not None:
@@ -24,6 +26,7 @@ class VideoProcess:
                 + output,
                 shell=True,
             )
+            return output
 
     def change_aspect_ratio(self, input, output):
         if self.params["aspect_ratio"] is not None:
@@ -36,12 +39,14 @@ class VideoProcess:
                 + output,
                 shell=True,
             )
+            return output
 
     def convert_to_audio(self, input, output):
         subprocess.call(
             "ffmpeg -i " + input + " -f mp3 -ab 192000 -vn " + output,
             shell=True,
         )
+        return output
 
     def create_gif(self, input, output):
         if (
@@ -59,6 +64,7 @@ class VideoProcess:
                 + output,
                 shell=True,
             )
+            return output
 
     def execute(self):
         process_table = {
@@ -68,7 +74,10 @@ class VideoProcess:
             "convert_to_audio": self.convert_to_audio,
             "create_gif": self.create_gif,
         }
-        root, ext = os.path.splitext(os.path.basename(self.inputFile))
+
+        input = self.dpath + "/" + self.filename
+
+        root, ext = os.path.splitext(os.path.basename(self.filename))
         now = datetime.datetime.now().strftime("%y%m%d")
 
         if self.process == "convert_to_audio":
@@ -76,10 +85,10 @@ class VideoProcess:
         elif self.process == "create_gif":
             ext = ".gif"
 
-        outputFile = self.outputDir + "/" + root + "_" + self.process + "_" + now + ext
+        output = self.dpath + "/" + root + "_" + self.process + "_" + now + ext
 
         try:
-            return process_table[self.process](self.inputFile, outputFile)
+            return process_table[self.process](input, output)
         except:
             print("request error")
             pass
