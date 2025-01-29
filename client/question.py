@@ -6,12 +6,12 @@ class Question:
     @staticmethod
     def video_process_question():
         answer = {
-            "filepath": "",
-            "process": "",
+            "filepath": None,
+            "process": None,
             "params": {
-                "resolution": "",
-                "aspect_ratio": "",
-                "gif": {"start": "", "end": ""},
+                "resolution": None,
+                "aspect_ratio": None,
+                "gif": {"start": None, "end": None},
             },
         }
 
